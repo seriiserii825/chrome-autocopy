@@ -1,0 +1,42 @@
+{
+  "manifest_version": 3,
+  "name": "Auto copy",
+  "description": "Auto copy text from web page",
+  "version": "1.0",
+  "author": "Serii Burduja",
+  "action": {
+    "default_title": "Enable/Disable Auto copy",
+    "default_icon": "icons/icon-32.png"
+  },
+  "icons": {
+    "32": "icons/icon-32.png"
+  },
+  "content_scripts": [
+    {
+      "js": ["js/content.js", "js/toastify.js"],
+      "css": ["css/toastify.css"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "permissions": [
+    "tabs",
+    "activeTab",
+    "scripting",
+    "storage",
+    "alarms",
+    "notifications"
+  ],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "js/background.js"
+  },
+  "commands": {
+    "move-to-last": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Right",
+        "mac": "Command+Shift+Right"
+      },
+      "description": "Сделать вкладку последней"
+    }
+  }
+}
