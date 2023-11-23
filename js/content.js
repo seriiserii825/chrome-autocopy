@@ -10,7 +10,7 @@ const writeClipboard = async (text) => {
             text: "Text copied to clipboard",
             duration: 3000,
             gravity: "top",
-            position: "center",
+            position: "right",
         }).showToast();
     }
 };
