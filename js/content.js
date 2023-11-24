@@ -51,7 +51,11 @@ const writeClipboard = async (text) => {
 
 function clipboardEnable() {
   let selecter = window.getSelection().toString();
-  if (selecter != null && selecter.length > 0) {
+  console.log(selecter, "selecter");
+  console.log(selecter.length, "selecter.length");
+  const is_true = selecter.length > 0;
+  console.log(is_true, "is_true");
+  if (is_true) {
     console.log(selecter, "selecter");
     writeClipboard(selecter);
   }
