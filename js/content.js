@@ -1,52 +1,86 @@
 let lastClipboardData = "";
 let noCheckClipboard = false;
+
 const writeClipboard = async (text) => {
-    noCheckClipboard = true;
-    lastClipboardData = text;
+  noCheckClipboard = true;
+  lastClipboardData = text;
+
+  if (navigator.clipboard && window.isSecureContext) {
     await navigator.clipboard.writeText(text);
-    noCheckClipboard = false;
     if (Toastify) {
-        Toastify({
-            text: "Text copied to clipboard",
-            duration: 3000,
-            gravity: "top",
-            position: "right",
-        }).showToast();
+      Toastify({
+        text: "Text copied to clipboard",
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+      }).showToast();
     }
+    noCheckClipboard = false;
+  } else {
+    // Use the 'out of viewport hidden text area' trick
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+
+    // Move textarea out of the viewport so it's not visible
+    textArea.style.position = "absolute";
+    textArea.style.left = "-999999px";
+
+    document.body.prepend(textArea);
+    textArea.select();
+
+    try {
+      document.execCommand("copy");
+      if (Toastify) {
+        Toastify({
+          text: "Text copied to clipboard",
+          duration: 3000,
+          gravity: "top",
+          position: "right",
+        }).showToast();
+        noCheckClipboard = false;
+      }
+    } catch (error) {
+      console.error(error);
+      noCheckClipboard = false;
+    } finally {
+      textArea.remove();
+      noCheckClipboard = false;
+    }
+  }
 };
 
-function clipboardEnable(){
-    let selecter = window.getSelection().toString();
-    if (selecter != null && selecter.length > 0) {
-        console.log(selecter, 'selecter')
-        writeClipboard(selecter);
-    }
+function clipboardEnable() {
+  let selecter = window.getSelection().toString();
+  if (selecter != null && selecter.length > 0) {
+    console.log(selecter, "selecter");
+    writeClipboard(selecter);
+  }
 }
 
 const startHandleClipboard = () => {
-    document.addEventListener("mouseup", clipboardEnable);
+  document.addEventListener("mouseup", clipboardEnable);
 };
 const stopHandleClipboard = () => {
-    document.removeEventListener("mouseup", clipboardEnable);
+  document.removeEventListener("mouseup", clipboardEnable);
 };
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    switch (request.type) {
-        case "enable": {
-            if (request.value) {
-                startHandleClipboard();
-            } else {
-                stopHandleClipboard();
-            }
-            sendResponse({ok: true});
-            return;
-        }
-    }
-    sendResponse({ok: true});
-});
-chrome.runtime.sendMessage({type: "status"}, (res) => {
-    if (res?.active) {
+  switch (request.type) {
+    case "enable": {
+      if (request.value) {
         startHandleClipboard();
-    } else {
+      } else {
         stopHandleClipboard();
+      }
+      sendResponse({ ok: true });
+      return;
     }
+  }
+  sendResponse({ ok: true });
+});
+chrome.runtime.sendMessage({ type: "status" }, (res) => {
+  if (res?.active) {
+    startHandleClipboard();
+  } else {
+    stopHandleClipboard();
+  }
 });
