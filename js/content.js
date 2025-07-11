@@ -1,5 +1,6 @@
 let lastClipboardData = "";
 let noCheckClipboard = false;
+let isDragging = false;
 
 const writeClipboard = async (text) => {
   noCheckClipboard = true;
@@ -17,14 +18,11 @@ const writeClipboard = async (text) => {
     }
     noCheckClipboard = false;
   } else {
-    // Use the 'out of viewport hidden text area' trick
+    // Fallback for insecure context
     const textArea = document.createElement("textarea");
     textArea.value = text;
-
-    // Move textarea out of the viewport so it's not visible
     textArea.style.position = "absolute";
     textArea.style.left = "-999999px";
-
     document.body.prepend(textArea);
     textArea.select();
 
@@ -37,11 +35,9 @@ const writeClipboard = async (text) => {
           gravity: "top",
           position: "right",
         }).showToast();
-        noCheckClipboard = false;
       }
     } catch (error) {
       console.error(error);
-      noCheckClipboard = false;
     } finally {
       textArea.remove();
       noCheckClipboard = false;
@@ -50,23 +46,38 @@ const writeClipboard = async (text) => {
 };
 
 function clipboardEnable() {
-  let selecter = window.getSelection().toString();
-  console.log(selecter, "selecter");
-  console.log(selecter.length, "selecter.length");
-  const is_true = selecter.length > 0;
-  console.log(is_true, "is_true");
-  if (is_true) {
-    console.log(selecter, "selecter");
-    writeClipboard(selecter);
+  const selectedText = window.getSelection().toString();
+  if (selectedText.length > 0) {
+    writeClipboard(selectedText);
+  }
+}
+
+function handleMouseDown() {
+  isDragging = false;
+}
+
+function handleMouseMove() {
+  isDragging = true;
+}
+
+function handleMouseUp() {
+  if (isDragging) {
+    clipboardEnable();
   }
 }
 
 const startHandleClipboard = () => {
-  document.addEventListener("mouseup", clipboardEnable);
+  document.addEventListener("mousedown", handleMouseDown);
+  document.addEventListener("mousemove", handleMouseMove);
+  document.addEventListener("mouseup", handleMouseUp);
 };
+
 const stopHandleClipboard = () => {
-  document.removeEventListener("mouseup", clipboardEnable);
+  document.removeEventListener("mousedown", handleMouseDown);
+  document.removeEventListener("mousemove", handleMouseMove);
+  document.removeEventListener("mouseup", handleMouseUp);
 };
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   switch (request.type) {
     case "enable": {
@@ -81,6 +92,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
   sendResponse({ ok: true });
 });
+
 chrome.runtime.sendMessage({ type: "status" }, (res) => {
   if (res?.active) {
     startHandleClipboard();
