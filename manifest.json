@@ -21,14 +21,7 @@
       "matches": ["<all_urls>"]
     }
   ],
-  "permissions": [
-    "tabs",
-    "activeTab",
-    "scripting",
-    "storage",
-    "alarms",
-    "notifications"
-  ],
+  "permissions": ["tabs", "activeTab", "scripting", "storage", "alarms", "notifications"],
   "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "js/background.js"
