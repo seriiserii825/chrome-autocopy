@@ -66,37 +66,7 @@ function handleMouseUp() {
   }
 }
 
-const startHandleClipboard = () => {
-  document.addEventListener("mousedown", handleMouseDown);
-  document.addEventListener("mousemove", handleMouseMove);
-  document.addEventListener("mouseup", handleMouseUp);
-};
-
-const stopHandleClipboard = () => {
-  document.removeEventListener("mousedown", handleMouseDown);
-  document.removeEventListener("mousemove", handleMouseMove);
-  document.removeEventListener("mouseup", handleMouseUp);
-};
-
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  switch (request.type) {
-    case "enable": {
-      if (request.value) {
-        startHandleClipboard();
-      } else {
-        stopHandleClipboard();
-      }
-      sendResponse({ ok: true });
-      return;
-    }
-  }
-  sendResponse({ ok: true });
-});
-
-chrome.runtime.sendMessage({ type: "status" }, (res) => {
-  if (res?.active) {
-    startHandleClipboard();
-  } else {
-    stopHandleClipboard();
-  }
-});
+// Always start clipboard handling immediately on script load:
+document.addEventListener("mousedown", handleMouseDown);
+document.addEventListener("mousemove", handleMouseMove);
+document.addEventListener("mouseup", handleMouseUp);
