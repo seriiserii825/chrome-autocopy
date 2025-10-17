@@ -37,7 +37,7 @@ const writeClipboard = async (text) => {
 
 // handle Ctrl + Click
 document.addEventListener("click", (event) => {
-  if (!event.ctrlKey) return; // only trigger on Ctrl key
+  if (event.ctrlKey) return; // only trigger on Ctrl key
 
   const selectedText = window.getSelection().toString().trim();
   if (selectedText.length > 0) {
